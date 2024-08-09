@@ -1,0 +1,201 @@
+---
+title: "Project 2: Is it worth to have a pet and if so, what type of pet? "
+author: "SID1: 530745819 SID2: 530328265 SID3: 530378190 SID4: 530760281 SID5: 530210535 SID6: 530520777"
+date: "University of Sydney | DATA1001 | 09/2023"
+output: 
+  html_document:
+    citation_package: pandoc-citeproc
+    fig_caption: yes
+    number_sections: no
+    self_contained: yes
+    theme: flatly
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    code_folding: hide
+bibliography: main.bib
+biblio-style: "apalike"
+---
+
+<br>
+
+![](https://www.google.com/url?sa=i&url=https%3A%2F%2Ftheconversation.com%2Fhow-the-landscape-has-changed-in-the-search-for-a-cure-for-breast-cancer-71947&psig=AOvVaw1nELgUggrc4mO5uiBGJDQF&ust=1698396621471000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCKD51cyqk4IDFQAAAAAdAAAAABAE)
+
+# Executive Summary
+- The aim for this report is to investigate whether most of general public agree that owning a pet is worth the time and love.
+- Data collected shows that there is a positive correlation between free time and time spent with pets, demonstrating that the general public values the companionship of their pets.
+-  Cats and dogs were found to be the most popular types of pets and yielded the most satisfaction on average, when compared to other types of pets such as fish, and guinea pigs.
+
+# Full Report
+
+## Initial Data Analysis (IDA)
+
+### Source
+The data was collected from the general public from 26/08/2023-12/09/2023, using Google Forms. 
+
+[online Google Forms survey](https://forms.gle/LrTkKyHrVUirfZGW9)
+
+
+### Structure
+The survey received 112 responses, each answering 11 questions, with 6 qualitative questions (Gender, type of pets, if the money spent was worth it, how often one takes pictures of pets, reasons for having a pet, pets’ disadvantages), and 5 quantitative questions (money spent, satisfaction from 1-10, hours of free time, time spent with pets, and owners’ age). We organized the data by using the “factor” function to group all the same answers together.
+
+### Limitations
+Data gathered were mainly from freshmen, mainly 18-19-year-olds, limiting the scope of opinions that we gathered since there is little data on the opinions of older citizens.
+
+### Assumptions
+We assumed that the levels of satisfaction are reported accurately (1-4 being unsatisfied, 5-7 being satisfied, and >8 being highly satisfied) while some may have reported a low score ironically.
+
+
+
+### Data Clearing
+Absurd answers involving pets’ disadvantages such as ADHD were excluded manually. Responses involving exotic pets were excluded since we wanted to investigate the relationship between more popular types of pets such as dogs and cats. 
+
+```{r, message = F}
+#install necessary library
+library(tidyverse)
+library(readr)
+```
+
+```{r, message= FALSE}
+#import and read dataframe
+my_data = read.csv("mydata.csv")
+my_data[my_data == "Im lonely :("] <- "Companion"
+```
+
+
+## Research Theme
+An investigation into is it worth to have a pet and if so, what type of pet?
+
+## Research Question 1:
+Is owning a pet worth the time and love?
+
+```{r}
+ggplot(my_data, aes(x = how.much.happiness.does.your.pet.bring.you.from.1...10.)) +
+  geom_bar(fill ="LightBlue", color="Black")+
+  labs(title = "Comparison on levels of satisfaction") +
+  ylab("Count") + xlab("Level of satisfaction(1 - 10)") + scale_x_continuous(limits=c(0,11), breaks=seq(1,10, by=1))
+```
+
+
+```{r}
+median(my_data$how.much.happiness.does.your.pet.bring.you.from.1...10.)
+mean(my_data$how.much.happiness.does.your.pet.bring.you.from.1...10.)
+```
+The comparison of satisfaction level splits into 3 parts. The upper level (8-10) has the largest amount of owners and has triple the sum of the other levels. Therefore, even though pets do bring trouble to their owner, we can still conclude that pets bring satisfaction to their owners!
+
+```{r}
+ggplot(my_data, aes(y = Time.spent.with.pets, x = hours.of.freetime)) +
+  geom_point() + 
+  geom_point(aes(x = mean(hours.of.freetime), y = mean(Time.spent.with.pets)), color = "red", size = 5) +
+  labs(title = "") +
+  geom_smooth(method = "lm", formula = "y ~ x") + ylab("Time spent with pets per week (hours)") + xlab("Free time per week (hours)")
+```
+```{r}
+
+correlation =round(cor(my_data$Time.spent.with.pets, my_data$hours.of.freetime), 2)
+correlation
+
+line <- lm(my_data$Time.spent.with.pets ~ my_data$hours.of.freetime)
+ln = line$coefficients
+ln
+```
+
+\[Correlation = 0.54      \text{                   (Moderate Positive Correlation)}\]
+
+\[y = 0.291x + 6.066      \text{                   (where x = Free time per week and y = Time spent with pets per week)}\]
+
+In summary, there is a clear positive correlation in the data, showing that individuals with more free time per week tend to allocate approximately 29.1% of that time to spend with their pets, indicating that participants in the study highly value the time they share with their animal companions.
+
+```{r}
+line = lm(Time.spent.with.pets ~ hours.of.freetime, data = my_data)
+ggplot(line, aes(x = .fitted, y = .resid)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype ="dashed", colour = "red") + ylab("Residual") + xlab("Hours of free time") + labs(title = "Residual graph of the time with pets ~ free time linear model")
+```
+
+The residual plot appears to be random and support the idea that the linear fit is appropriate for the data.
+
+
+## Research Question 2
+What are the advantages and disadvantages of each type of pets?
+
+```{r}
+ggplot(my_data, aes(x = types.of.pet, fill = factor( What.is.the.disadvantages.to.have.a.pet.))) +
+  geom_bar(position = "fill") + labs(title = "Pet species vs Disadvantages") +
+  ylab("Percentage (%)") + xlab("Types of pet") + labs(fill= "Disadvantages")
+```
+
+According to the graph above, fish would be the easiest pet to take care, which has only one disadvantage to deal with, while the others have multiple issues.
+
+```{r}
+ggplot(my_data, aes(x = types.of.pet, fill = factor(Can.you.give.us.reasons.on.why.do.you.need.a.pet))) +
+  geom_bar(position = "fill") + labs(title = "Pet species vs Advantages") +
+  ylab("Percentage(%)") + xlab("Types of pet") + labs(fill= "Advantages")
+
+```
+
+The main reason for why the owners keep their pet is because of pets' cute appearance! While the reason for most fish owners is that fishes benefit their mental health. What comes next is that many pet owners believe that the company of pets will solve their loneliness. One type of pet stands out: dogs have all-round advantages compared with other animal categories.
+
+
+```{r}
+ggplot(my_data, aes(x = types.of.pet, y = how.much.happiness.does.your.pet.bring.you.from.1...10., fill = factor(types.of.pet))) + geom_boxplot () + 
+  ylab("Satisfaction (1 - 10)") + xlab("Types of pet") + labs(fill= "Types of pet")
+```
+
+The box plots represent the relationship between type of pets and satisfaction level.  Over 70% of cats and dogs owners gave high satisfaction levels whereas 50% fish owner gave a low score for their satisfaction level.
+
+## Conclusion
+Despite the potential hassles, 73% of participants reported high satisfaction (above 5) and spent about 29% of their free time with their pets, valuing their companionship. Cats and dogs provided the most satisfaction, though individual preferences vary. Overall, the generally positive responses suggest that having a pet is worthwhile.
+
+# Articles
+1. @no1 mentioned that there are 3 main advantages to keep a pet, First, pets are a reflection of your self-image. Second, pets can be social lubricants. Third, pets provide human companionship
+
+2. In a study by @no2, 87% saw their pets as family, with 36% even considering them as individuals. 81% believed pets sensed family moods and reacted physically to stress.
+
+## References
+
+<div id="refs"></div>
+
+
+# Acknowledgements
+
+### List of Meetings and Contributions 
+
+| Time        | Attendance     | What team do        |
+|-------------|:--------------:|--------------------:|
+|29/8/23: Post Lab Meeting| Hai Chau, Mayee, Boonme, Ding, Minh, Jacob |All in Attendance: Development of research theme and variables for Project 2 |
+|5/9/23: Post Lab Meeting| Hai Chau, Mayee, Boonme, Ding, Minh, Jacob |All in Attendance: Reviewing Google Forms before launching it. |
+|9/9/23: Online 10am| Hai Chau, Mayee, Boonme, Ding, Minh, Jacob |Reviewing the feedback from project 1 & Giving each other task to do for project 2 |
+|10/9/23: Brief Online Discussion| Hai Chau, Mayee, Boonme, Ding, Minh, Jacob |All in Attendance: Launching Google Forms.|
+|16/9/23: Project Week 7 6-7pm| Hai Chau, Mayee, Boonme, Ding, Minh, Jacob | All in Attendance: Reviewing the data collected from the survey and performing initial data analysis|
+17/9/23 10am: Online Discussion | Hai Chau, Mayee, Boonme, Ding, Minh, Jacob | All in Attendance: Working on the Executive Summary, Initial Data Analysis and Research Theme components of the report. |
+18/9/23 3pm | Hai Chau, Mayee, Boonme, Ding, Minh, Jacob | All in Attendance: Summarised the graphs, Full Report, Articles, Reference, Acknowledgement.|
+19/9/23: Post Lab | Hai Chau, Mayee, Boonme, Ding, Minh, Jacob | All in Attendance: Checked the whole project 2 to make sure there’s no mistake on the graph.|
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
